@@ -45,7 +45,8 @@ numberOfRowsInComponent:(NSInteger)component
 -(void)pickerView:(UIPickerView *)pickerView didSelectRow:(NSInteger)row
       inComponent:(NSInteger)component
 {
-    
+    str_employeeType = arr_employeeTypes[row];
+    [[NSUserDefaults standardUserDefaults]setValue:str_employeeType forKey:@"employeeType"];
 }
 
 - (UIView *)pickerView:(UIPickerView *)pickerView viewForRow:(NSInteger)row forComponent:(NSInteger)component reusingView:(UIView *)view{

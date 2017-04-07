@@ -18,6 +18,11 @@
 }
 @property (weak, nonatomic) IBOutlet CircleProgressBar *circleProgressBar;
 @property (strong, nonatomic)IBOutlet UILabel *lbl_projectName;
+@property (strong, nonatomic)IBOutlet UIButton *btn_addRequirement;
+@property (strong, nonatomic)IBOutlet UIButton *btn_addTasks;
+@property (strong, nonatomic)IBOutlet UILabel *lbl;
+
+
 
 @property (strong, nonatomic)NSString *str_projectName;
 
@@ -26,5 +31,7 @@
 -(IBAction)sendEmailTL:(id)sender;
 -(IBAction)addRequirement:(id)sender;
 -(IBAction)signOutPressed:(id)sender;
+-(IBAction)addTask:(id)sender;
+
 
 @end

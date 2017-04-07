@@ -21,6 +21,25 @@
     [_circleProgressBar setProgress:(19.00f/20.00f) animated:YES];
     self.lbl_projectName.text = str_projectName;
     [self.lbl_projectName sizeToFit];
+    if([[[NSUserDefaults standardUserDefaults]valueForKey:@"employeeType"] isEqualToString:@"Team Leader"])
+    {
+        self.btn_addRequirement.hidden = YES;
+        self.lbl.text = @"Task List";
+    }
+    else if ([[[NSUserDefaults standardUserDefaults]valueForKey:@"employeeType"] isEqualToString:@"Project Manager"])
+    {
+        self.btn_addTasks.hidden = YES;
+        self.lbl.text = @"Requirement List";
+    }
+    else
+    {
+        self.btn_addTasks.hidden = YES;
+        self.btn_addRequirement.hidden = YES;
+        self.lbl.text = @"Task List";
+    }
+    
+    self.lbl.textAlignment = NSTextAlignmentCenter;
+    
     
 }
 
@@ -34,6 +53,7 @@
 -(IBAction)backbtnPressed:(id)sender
 {
     [self.navigationController popViewControllerAnimated:YES];
+    
 }
 
 #pragma mark - Email TL
@@ -51,6 +71,12 @@
 
 #pragma mark - Add Requirement
 -(IBAction)addRequirement:(id)sender
+{
+    
+}
+
+#pragma mark -Add Task
+-(IBAction)addTask:(id)sender
 {
     
 }

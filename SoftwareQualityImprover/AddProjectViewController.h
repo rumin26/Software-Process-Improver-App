@@ -14,6 +14,9 @@
     NSString *str_projectName;
 }
 
+@property(strong,nonatomic)IBOutlet UIButton *btn_addProject;
+
+
 -(IBAction)signOutPressed:(id)sender;
 
 @end

@@ -11,6 +11,7 @@
 @interface LoginViewController : UIViewController<UIPickerViewDataSource, UIPickerViewDelegate>
 {
     NSMutableArray *arr_employeeTypes;
+    NSString *str_employeeType;
 }
 @property (strong, nonatomic) IBOutlet UIPickerView *pickerView;
 

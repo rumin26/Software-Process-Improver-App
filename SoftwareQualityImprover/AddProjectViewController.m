@@ -8,6 +8,7 @@
 
 #import "AddProjectViewController.h"
 #import "ProjectDashBoardViewController.h"
+#import "TaskListViewController.h"
 
 @interface AddProjectViewController ()
 
@@ -18,7 +19,15 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view.
-    arr_projects = [[NSMutableArray alloc]initWithObjects:@"Food Truth App", nil];
+    if([[[NSUserDefaults standardUserDefaults]valueForKey:@"employeeType"] isEqualToString:@"Team Leader"] || [[[NSUserDefaults standardUserDefaults]valueForKey:@"employeeType"] isEqualToString:@"Developer/ Tester"])
+    {
+        self.btn_addProject.hidden = YES;
+    }
+    else
+    {
+        
+    }
+    arr_projects = [[NSMutableArray alloc]initWithObjects:@"Food Truth App", @"Convert Units", nil];
     
 }
 
@@ -44,23 +53,51 @@
     
     cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
     cell.textLabel.text = [arr_projects objectAtIndex:indexPath.row];
+    //tableView.allowsMultipleSelection = YES;
+    
     return cell;
 }
 
 #pragma mark - UITableView Delegate
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
+    
     str_projectName = [arr_projects objectAtIndex:indexPath.row];
-    [self performSegueWithIdentifier:@"openProject" sender:self];
+    
+    
+    if([[[NSUserDefaults standardUserDefaults]valueForKey:@"employeeType"] isEqualToString:@"Team Leader"] || [[[NSUserDefaults standardUserDefaults]valueForKey:@"employeeType"] isEqualToString:@"Project Manager"])
+    {
+        [self performSegueWithIdentifier:@"openProject" sender:self];
+    }
+    else
+    {
+        [self performSegueWithIdentifier:@"openTaskList" sender:self];
+    }
+    
+//    UITableViewCell *thisCell = [tableView cellForRowAtIndexPath:indexPath];
+//    if (thisCell.accessoryType == UITableViewCellAccessoryNone) {
+//        thisCell.accessoryType = UITableViewCellAccessoryCheckmark;
+//        
+//    }else{
+//        thisCell.accessoryType = UITableViewCellAccessoryNone;
+//        
+//    }
 }
 
 #pragma mark - Segue Method
 
 - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender
 {
-    ProjectDashBoardViewController *projectDashVC = [segue destinationViewController];
-    projectDashVC.str_projectName = str_projectName;
-    
+    if([segue.identifier isEqualToString:@"openTaskList"])
+    {
+        TaskListViewController *taskVC = [segue destinationViewController];
+        taskVC.str_projectName = str_projectName;
+    }
+    else
+    {
+        ProjectDashBoardViewController *projectDashVC = [segue destinationViewController];
+        projectDashVC.str_projectName = str_projectName;
+    }
 }
 
 #pragma mark - Sign Out
