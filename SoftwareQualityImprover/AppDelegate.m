@@ -14,9 +14,34 @@
 
 @implementation AppDelegate
 
+- (void)createEditableCopyOfDatabaseIfNeeded
+{
+    // First, test for existence.
+    BOOL success;
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    NSError *error;
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+    NSString *documentsDirectory = [paths objectAtIndex:0];
+    NSString *writableDBPath = [documentsDirectory stringByAppendingPathComponent:@"db_softwareProcess.sqlite"];
+    success = [fileManager fileExistsAtPath:writableDBPath];
+     NSLog(@"path:%@",writableDBPath);
+    if (success) return;
+    
+    // The writable database does not exist, so copy the default to the appropriate location.
+    
+    NSString *defaultDBPath = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"db_softwareProcess.sqlite"];
+    success = [fileManager copyItemAtPath:defaultDBPath toPath:writableDBPath error:&error];
+    if (!success) {
+        NSAssert1(0, @"Failed to create writable database file with message '%@'.", [error localizedDescription]);
+    }
+   
+    
+    
+}
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     // Override point for customization after application launch.
+    [self createEditableCopyOfDatabaseIfNeeded];
     return YES;
 }
 

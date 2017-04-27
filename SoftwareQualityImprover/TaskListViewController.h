@@ -7,6 +7,11 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "Sqlite.h"
+
+#define CELL_CONTENT_WIDTH 320.0f
+#define CELL_CONTENT_MARGIN 10.0f
+#define FONT_SIZE 12.0f
 
 @interface TaskListViewController : UIViewController<UITableViewDelegate, UITableViewDataSource>
 
@@ -15,9 +20,12 @@
     NSMutableArray *arr_selectedTasks;
     NSString *str_taskName;
     
+    Sqlite *database;
+    
 }
 @property (strong, nonatomic)IBOutlet UILabel *lbl_projectName;
 @property (strong, nonatomic)IBOutlet UIButton *btn_continue;
+@property(strong, nonatomic)IBOutlet UITableView *tbl_tasks;
 
 
 @property (strong, nonatomic)NSString *str_projectName;

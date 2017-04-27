@@ -1,37 +1,46 @@
 //
-//  TaskListViewController.m
+//  CompletedTasksViewController.m
 //  SoftwareQualityImprover
 //
-//  Created by Rumin Shah on 4/6/17.
+//  Created by Rumin Shah on 4/25/17.
 //  Copyright © 2017 Rumin Shah. All rights reserved.
 //
 
-#import "TaskListViewController.h"
-#import "TaskProgressViewController.h"
+#import "CompletedTasksViewController.h"
 
-@interface TaskListViewController ()
+@interface CompletedTasksViewController ()
 
 @end
 
-@implementation TaskListViewController
-@synthesize str_projectName;
+@implementation CompletedTasksViewController
 
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view.
-    self.lbl_projectName.text = [[NSUserDefaults standardUserDefaults]valueForKey:@"selected_project"];
-    arr_tasks = [[NSMutableArray alloc]init];
-    arr_selectedTasks = [[NSMutableArray alloc]init];
+    NSString *str_projectName = [[NSUserDefaults standardUserDefaults]valueForKey:@"selected_project"];
+    NSString *emp_email = [[NSUserDefaults standardUserDefaults]valueForKey:@"emp_email"];
     
-    [self databaseOpen];
-    NSString *query_task =[ NSString stringWithFormat:@"SELECT task FROM tbl_tasks WHERE project_name = '%@' AND completed='NO' AND selected='NO'",self.lbl_projectName.text];
-    
-    NSMutableArray *arr_result =[[NSMutableArray alloc]init];
-    arr_result =[[database executeQuery:query_task]mutableCopy];
-    arr_tasks = [[arr_result valueForKey:@"task"]mutableCopy];
-    
-    [database close];
-    
+    if([[[NSUserDefaults standardUserDefaults]valueForKey:@"employeeType"] isEqualToString:@"Team Leader"])
+    {
+        
+        [self databaseOpen];
+        NSString *query_task =[ NSString stringWithFormat:@"SELECT task FROM tbl_tasks WHERE completed = 'YES' AND project_name='%@'",str_projectName];
+        
+        NSMutableArray *arr_result =[[NSMutableArray alloc]init];
+        arr_result =[[database executeQuery:query_task]mutableCopy];
+        arr_completedTasks = [[arr_result valueForKey:@"task"]mutableCopy];
+        [database close];
+    }
+    else
+    {
+        [self databaseOpen];
+        NSString *query_task =[ NSString stringWithFormat:@"SELECT task FROM tbl_selected_tasks WHERE completed = 'YES' AND project_name='%@' AND emp_email='%@'",str_projectName,emp_email];
+        
+        NSMutableArray *arr_result =[[NSMutableArray alloc]init];
+        arr_result =[[database executeQuery:query_task]mutableCopy];
+        arr_completedTasks = [[arr_result valueForKey:@"task"]mutableCopy];
+        [database close];
+    }
 }
 
 - (void)didReceiveMemoryWarning {
@@ -58,8 +67,9 @@
 #pragma mark - UITableView Data Source
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
-    return [arr_tasks count];
+    return [arr_completedTasks count];
 }
+
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
     static NSString *simpleTableIdentifier = @"SimpleTableItem";
@@ -74,10 +84,9 @@
     [cell.textLabel setLineBreakMode:NSLineBreakByWordWrapping];
     cell.textLabel.minimumScaleFactor = FONT_SIZE;
     [cell.textLabel setNumberOfLines:0];
+    NSString *text =[ arr_completedTasks objectAtIndex:indexPath.row];
     
-    NSString *text = [arr_tasks objectAtIndex:indexPath.row];
-        
-        
+    
     cell.textLabel.font = [UIFont systemFontOfSize:13.0f];
     CGSize size = [cell.textLabel.text sizeWithFont:[UIFont systemFontOfSize:FONT_SIZE]];
     cell.textLabel.textColor = [UIColor whiteColor];
@@ -97,7 +106,8 @@
         cell.textLabel.frame = CGRectMake(10, 0, self.view.frame.size.width - 18,18);
         [cell.textLabel setText:text];
     }
-
+    
+    //cell.textLabel.font = [UIFont systemFontOfSize:13.0f];
     
     return cell;
 }
@@ -106,36 +116,11 @@
     [tableView setBackgroundColor:[UIColor clearColor]];
     [cell setBackgroundColor:[UIColor clearColor]];
 }
-
-#pragma mark - UITableView Delegate
-- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
-{
-    
-    str_taskName = [arr_tasks objectAtIndex:indexPath.row];
-    
-    UITableViewCell *thisCell = [tableView cellForRowAtIndexPath:indexPath];
-    
-    if (thisCell.accessoryType == UITableViewCellAccessoryNone)
-    {
-        thisCell.accessoryType = UITableViewCellAccessoryCheckmark;
-        [arr_selectedTasks addObject:[arr_tasks objectAtIndex:indexPath.row]];
-    }
-    else
-    {
-        thisCell.accessoryType = UITableViewCellAccessoryNone;
-        [arr_selectedTasks removeObject:[arr_tasks objectAtIndex:indexPath.row]];
-            
-    }
-    
-    NSLog(@"selected Tasks:%@", arr_selectedTasks);
-    
-
-}
-
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    NSString *cellText = [arr_tasks objectAtIndex:indexPath.row];
-   
+    NSString *cellText = [arr_completedTasks objectAtIndex:indexPath.row];
+    
+    
     CGSize constraint = CGSizeMake(CELL_CONTENT_WIDTH - (CELL_CONTENT_MARGIN * 2), 20000.0f);
     
     CGSize labelsize = [cellText sizeWithFont:[UIFont systemFontOfSize:FONT_SIZE] constrainedToSize:constraint lineBreakMode:NSLineBreakByWordWrapping];
@@ -153,53 +138,18 @@
         return height +5;
     }
     
-    
 }
-
-
-#pragma mark - Continue
--(IBAction)continuePressed:(id)sender
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    [self databaseOpen];
-    NSString *emp_email = [[NSUserDefaults standardUserDefaults]valueForKey:@"emp_email"];
-    
-    NSString *query=[ NSString stringWithFormat:@"SELECT member_name  FROM tbl_team WHERE member_email = '%@'",emp_email];
-    
-    
-    NSMutableArray *arr =[[NSMutableArray alloc]init];
-    arr =[[database executeQuery:query]mutableCopy];
-    NSMutableArray *arr_emp_name = [arr valueForKey:@"member_name"];
-    
-    NSString *str_emp_name = [arr_emp_name objectAtIndex:0];
-    
-    for(int i = 0; i< arr_selectedTasks.count;i++)
-    {
-        NSString *query_user=[NSString stringWithFormat:@"Insert into tbl_selected_tasks(project_name, task, emp_email, emp_name,completed) values('%@','%@','%@','%@','NO')",self.lbl_projectName.text,arr_selectedTasks[i],emp_email, str_emp_name];
-    
-        [database executeNonQuery:query_user];
-        
-        
-        NSString *query_requirement =[ NSString stringWithFormat:@"UPDATE tbl_tasks SET selected = 'YES' WHERE task = '%@'", arr_selectedTasks[i]];
-        
-        [database executeNonQuery:query_requirement];
-        //[arr_selectedTasks removeObjectAtIndex:i];
-        //[self.tbl_tasks reloadData];
-    }
-    
-    [self performSegueWithIdentifier:@"openTaskProgress" sender:self];
-}
-
-#pragma mark - Segue Method
-
-- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender
-{
-    
-    TaskProgressViewController *taskVC = [segue destinationViewController];
-    taskVC.str_projectName = str_projectName;
-    taskVC.arr_selectedTasks = arr_selectedTasks;
+    MODropAlertView *alertView = [[MODropAlertView alloc]initDropAlertWithTitle:@"InComplete!" description:@"Do you want to mark this requirement as incomplete?" okButtonTitle:@"InComplete" cancelButtonTitle:@"Cancel"];
+    alertView.delegate = self;
+    [alertView show];
+    selectedIndex = indexPath.row;
     
     
 }
+
+
 #pragma mark - Database Method
 
 -(void)databaseOpen
@@ -215,6 +165,26 @@
     
     NSLog(@"Database opened");
     
+}
+
+#pragma mark - MODropAlertView
+- (void)alertViewDidDisappear:(MODropAlertView *)alertView buttonType:(DropAlertButtonType)buttonType
+{
+    if(buttonType == DropAlertButtonOK)
+    {
+        [self databaseOpen];
+        NSString *query_task =[ NSString stringWithFormat:@"UPDATE tbl_selected_tasks SET completed = 'NO' WHERE task = '%@'", [arr_completedTasks objectAtIndex:selectedIndex]];
+        
+        [database executeNonQuery:query_task];
+        
+        NSString *query_task1 =[ NSString stringWithFormat:@"UPDATE tbl_tasks SET completed = 'NO', selected='NO' WHERE task = '%@'", [arr_completedTasks objectAtIndex:selectedIndex]];
+        
+        [database executeNonQuery:query_task1];
+        
+        [arr_completedTasks removeObjectAtIndex:selectedIndex];
+        [self.tbl_compTasks reloadData];
+        
+    }
 }
 /*
 #pragma mark - Navigation
